@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find rpi_edukit)/launch/includes/teleop.launch.xml" />
+  <include file="$(find rpi_edukit)/launch/includes/control.launch.xml" />
+</launch>

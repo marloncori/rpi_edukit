@@ -1,0 +1,3 @@
+<launch>
+  <node name="driver" pkg="rpi_edukit" type="motor_driver_node" />
+</launch>
