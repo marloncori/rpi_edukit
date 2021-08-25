@@ -1,65 +1,54 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from std_msgs.msg import String
-import RPi.GPIO as gpio
-import time
+from edukit_motor import Motor
 
-gpio.setmode(gpio.BCM)
-gpio.setwarnings(False)
+rightMotor = Motor('d:10:o','d:9:o','d:12:p', offset=30)
+leftMotor = Motor('d:8:o','d:7:o','d:6:p', offset=30)
+forwardSpeed = 70, backwardSpeed = 60, turnSpeed = 50
 
-pins = {"pinMotorAforward":10, "pinMotorAbackward":9,
-        "pinMotorBforward":8, "pinMotorBbackward":7}
-
-pwm = ["pwmMotorAforwards", "pwmMotorAbackwards",
-      "pwmMotorBforwards", "pwmMotorBbackwards"]
-
-Frequency = 20, DutyCycle = 30, Stop = 0
-
-for i in pins:
-    gpio.setup(pins[i], gpio.OUT)
-    
-pwm[0] = gpio.PWM(pins[0], Frequency)
-pwm[1] = gpio.PWM(pins[1], Frequency)
-pwm[2] = gpio.PWM(pins[2], Frequency)
-pwm[3] = gpio.PWM(pins[3], Frequency)
-    
 def Forward():
-    pwm[0:3:2].ChangeDutyCycle(DutyCycle) #first and third list member
-    pwm[1:4:2].ChangeDutyCycle(Stop) #second and fourth member
-    
+    rightMotor.clockwise(forwardSpeed)
+    leftMotor.clockwise(forwardSpeed)
+        
 def Backward():
-    pwm[0:3:2].ChangeDutyCycle(Stop) #first and last third member
-    pwm[1:4:2].ChangeDutyCycle(DutyCycle) #second and fourth member
-    
+    rightMotor.counterclockwise(backwardSpeed)
+    leftMotor.counterclockwise(backwardSpeed)
+        
 def StopMotors():
-    for j in pwm:
-        pwm[j].ChangeDutyCycle(Stop)
+    rightMotor.stop()
+    leftMotor.stop()
 
 def Left():
-    pwm[0:5:3].ChangeDutyCycle(Stop) #first and last list member
-    pwm[1:3].ChangeDutyCycle(DutyCycle) #second and third member
+    rightMotor.clockwise(turnSpeed)
+    leftMotor.counterclockwise(turnSpeed)
 
 def Right():
-    pwm[0:5:3].ChangeDutyCycle(DutyCycle) #first and last list member
-    pwm[1:3].ChangeDutyCycle(Stop) #second and third member
+    rightMotor.counterclockwise(turnSpeed)
+    leftMotor.clockwise(turnSpeed)
+
+def Finish():
+    rightMotor.close()
+    leftMotor.close()
         
 def CommandCallback(command_message):
     command = command_message.data
     if command = 'forwards':
-        print('Moving forward')
+        print('Moving forward...')
         Forward()
     elif command = 'backwards':
-        print('Moving backward')
+        print('Moving backward...')
         Backward()
     elif command = 'turn right':
-        print('Turning right')
+        print('Turning right.')
         Right()
     elif command = 'turn left':
         print('Turning left.')
         Left()
     else:
         print("Unknown command. Try again")
-
+        StopMotors()
+        
 if __name__ == '__main__':
     try:
         rospy.init_node('driver')
@@ -67,5 +56,4 @@ if __name__ == '__main__':
         rospy.spin()
 
     except rospy.ROSInterruptException:
-        StopMotors()
-        gpio.cleanup()
+        Finish()
