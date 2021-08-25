@@ -5,27 +5,29 @@ from edukit_motor import Motor
 
 rightMotor = Motor('d:10:o','d:9:o','d:12:p', offset=30)
 leftMotor = Motor('d:8:o','d:7:o','d:6:p', offset=30)
-forwardSpeed = 70, backwardSpeed = 60, turnSpeed = 50
+motorSpeed = 70
+rightSpeed = rightMotor._speed_map(motorSpeed, 0, 100, 0, 256)
+leftSpeed = leftMotor._speed_map(motorSpeed, 0, 100, 0, 256)
 
 def Forward():
-    rightMotor.clockwise(forwardSpeed)
-    leftMotor.clockwise(forwardSpeed)
+    rightMotor.clockwise(rightSpeed)
+    leftMotor.clockwise(leftSpeed)
         
 def Backward():
-    rightMotor.counterclockwise(backwardSpeed)
-    leftMotor.counterclockwise(backwardSpeed)
+    rightMotor.counterclockwise(rightSpeed)
+    leftMotor.counterclockwise(leftSpeed)
         
 def StopMotors():
     rightMotor.stop()
     leftMotor.stop()
 
 def Left():
-    rightMotor.clockwise(turnSpeed)
-    leftMotor.counterclockwise(turnSpeed)
+    rightMotor.clockwise(rightSpeed)
+    leftMotor.counterclockwise(leftSpeed)
 
 def Right():
-    rightMotor.counterclockwise(turnSpeed)
-    leftMotor.clockwise(turnSpeed)
+    rightMotor.counterclockwise(rightSpeed)
+    leftMotor.clockwise(leftSpeed)
 
 def Finish():
     rightMotor.close()
