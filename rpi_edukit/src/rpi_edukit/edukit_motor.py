@@ -2,12 +2,14 @@ from pyfirmata import Arduino, util
 
 class Motor(Arduino):
 
-    def __init__(self, positive_pwm, negative_pwm, enable_pwm, maxSpeed=100):
+    def __init__(self, positive_pwm, negative_pwm, enable_pwm, minSpeed=0, maxSpeed=100, offset=20):
         self._positive = positive_pwm
         self._negative = negative_pwm
         self._enable = enable_pwm
 
+        self._minSpeed = minSpeed
         self._maxSpeed = maxSpeed
+        self._offset = offset
         self._pwm = None
         
         self.uno = Arduino('/dev/ttyACM0')
@@ -16,22 +18,26 @@ class Motor(Arduino):
         self.pinB = self.uno.get_pin(self._negative)
         self.pinE = self.uno.get_pin(self._enable)
 
-    def __setMotor(self, state1, state2, speed):
-        self.pinA.write(state1)
-        self.pinB.write(state2)
-        self.pinE.write(speed)
+    def __setMotor(self, fwd_speed, back_speed, state):
+        self.pinA.write(fwd_speed)
+        self.pinB.write(back_speed)
+        self.pinE.write(state)
         
     def clockwise(self, speed):
-        self._pwm = speed
-        self.__setMotor(1, 0, self._pwm)
-        
+        self._pwm = speed + 1
+        for spin in range(self._minSpeed, self._pwm, self._offset): 
+            self.__setMotor(spin, 0, 1)
+            sleep(0.04)
+            
     def counterclockwise(self, speed):
-        self._pwm = speed
-        self.__setMotor(0, 1, self._pwm)
+        self._pwm = speed + 1
+        for spin in range(self._minSpeed, self._pwm, self._offset):
+            self.__setMotor(0, spin, 1)
+            sleep(0.04)
         
     def stop(self):
         self._pwm = 0
-        self.__setMotor(0,0,self._pwm)
+        self.__setMotor(self._pwm, self._pwm, 0)
 
     def close(self):
         self.__setMotor(0,0,0)
@@ -54,11 +60,11 @@ class Motor(Arduino):
         return value
     
     def move(self, speedPercent):
-        speed = self._clip(abs(speedPercent), 0, 100)
+        speed = self._clip(abs(speedPercent), self._minSpeed, self._maxSpeed)
         #positive speed moves wheels forwards, negative - backwards
         if speedPercent < 0:
-            self._speed_map_abs(speed, 0, 100, 0, 256)
+            self._speed_map_abs(speed, self._minSpeed, self._maxSpeed, 0, 256)
             self.counterclockwise(speed)
         else:
-            self._speed_map(speed, 0, 100, 0, 256)
+            self._speed_map(speed, self._minSpeed, self._maxSpeed, 0, 256)
             self.clockwise(speed)
