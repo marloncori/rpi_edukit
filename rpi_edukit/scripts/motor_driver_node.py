@@ -1,8 +1,6 @@
 import rospy
 from geometry_msgs.msg import Twist
 from edukit_motor import Motor
-import RPi.GPIO as rpi
-
 
 class Driver:
     def __init__(self):
@@ -13,9 +11,9 @@ class Driver:
         self._maxSpeed = rospy.get_param('-max_speed', 0.5)
         self._wheelBase = rospy.get_param('-wheel_base', 0.091)
 
-        #now assign pins to motors
-        self._rightMotor = Motor(10, 9)
-        self._leftMotor = Motor(8, 7)
+        #now assign pins to motors11
+        self._rightMotor = Motor('d:10:o','d:9:o','d:12:p')
+        self._leftMotor = Motor('d:8:o','d:7:o','d:6:p')
 
         self._rightSpeedPercent = 0
         self._leftSpeedPercent = 0
@@ -40,6 +38,10 @@ class Driver:
         self._leftSpeedPercent = 100 * leftSpeed / self._maxSpeed
         self._rightSpeedPercent = 100 * rightSpeed / self._maxSpeed
 
+    def cleanup(self):
+        self._leftMotor.close()
+        self._rightMotor.close()
+        
     def run(self):
         rate = rospy.Rate(self._rate)
         while not rospy.is_shutdown():
@@ -52,8 +54,9 @@ class Driver:
                 self._rightMotor.move(0)
         rate.sleep()
 
+motor_driver = Driver()
+
 def main():
-    motor_driver = Driver()
     motor_driver.run()
     
 
@@ -63,4 +66,4 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         rospy.loginfo("User has finished the program").
         print("Shutting down: stopping motors.')
-        rpi.cleanup()
+        motor_driver.cleanup()
