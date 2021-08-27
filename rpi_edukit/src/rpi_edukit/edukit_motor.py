@@ -56,7 +56,7 @@ class Motor(Arduino):
         return value
     
     def move(self, speedPercent):
-        speed = self._clip(abs(speedPercent), self._minSpeed, self._maxSpeed)
+        speed = self._clip(speedPercent, -1.0, 1.0)
         #positive speed moves wheels forwards, negative - backwards
         if speedPercent < 0.0:
             self._pwm = self._speed_map_abs(speed, -1.0, 0.0, self._minSpeed, self._maxSpeed)
